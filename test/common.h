@@ -1,0 +1,51 @@
+#pragma once
+
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#define TLBT_TEST_ASSERT(cond, message)                                                                                \
+  do {                                                                                                                 \
+    if (!(cond)) {                                                                                                     \
+      fprintf(stderr, "Assertion failed: '%s' in file '%s' at line %d\n", message, __FILE__, __LINE__);                \
+      return 1;                                                                                                        \
+    }                                                                                                                  \
+  } while (0)
+
+#define TLBT_TEST_START()                                                                                              \
+  do {                                                                                                                 \
+    fprintf(stdout, "Starting tests in '%s'.\n", __FILE__);                                                            \
+    return 0;                                                                                                          \
+  } while (0)
+
+#define TLBT_TEST_DONE()                                                                                               \
+  do {                                                                                                                 \
+    fprintf(stdout, "All tests in '%s' ran successfully.\n", __FILE__);                                                \
+    return 0;                                                                                                          \
+  } while (0)
+
+typedef struct string_slice {
+  const char *data;
+  size_t len;
+} string_slice;
+
+typedef struct point {
+  int x, y;
+} point;
+
+static inline uint32_t string_slice_hash(const string_slice *const s) {
+  uint32_t hash = 36591911;
+  const char *str = s->data;
+  for (size_t i = 0; i < s->len; ++i) {
+    hash = (hash << 5) + hash + (uint8_t)(str[i]);
+  }
+  return hash;
+}
+
+static inline bool string_slice_equals(const string_slice *const a, const string_slice *const b) {
+  return a->len == b->len && memcmp(a->data, b->data, a->len) == 0;
+}
+
