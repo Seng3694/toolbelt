@@ -227,6 +227,10 @@ static inline void TLBT_MAP_ITERATOR_FUNC(init)(TLBT_MAP_ITERATOR_TYPE *const it
   iter->map = m;
 }
 
+static inline void TLBT_MAP_ITERATOR_FUNC(reset)(TLBT_MAP_ITERATOR_TYPE *const iter) {
+  iter->i = 0;
+}
+
 #ifdef TLBT_VALUE_T
 static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const iter, TLBT_KEY_T **out_key,
                                                    TLBT_VALUE_T **out_value) {
@@ -277,6 +281,7 @@ static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const
 TLBT_INLINE bool TLBT_MAP_FUNC_INTERNAL(find_entry)(TLBT_MAP_KEY_TYPE *keys, TLBT_SIZE_T capacity, TLBT_KEY_T key,
                                                     TLBT_UINT32_T hash, TLBT_SIZE_T *out_index) {
   TLBT_SIZE_T i = TLBT_MOD(hash, capacity);
+  const TLBT_SIZE_T start = i;
   for (;;) {
     TLBT_MAP_KEY_TYPE *entry = &keys[i];
     if (!TLBT_IS_OCCUPIED(entry->index) && !TLBT_IS_DELETED(entry->index)) {
@@ -288,6 +293,8 @@ TLBT_INLINE bool TLBT_MAP_FUNC_INTERNAL(find_entry)(TLBT_MAP_KEY_TYPE *keys, TLB
       // deleted or occupied and not the same
       // if an entry was deleted we still have to continue searching because it might have been inserted after that
       i = TLBT_MOD(i + 1, capacity);
+      if (i == start)
+        return false;
     }
   }
   // should never reach
