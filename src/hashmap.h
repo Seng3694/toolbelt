@@ -1,7 +1,8 @@
 /*
 types:
-- tlbt_map_KEY_VALUE      map type KEY and VALUE depend on your definitions
-- tlbt_map_KEY_VALUE_key  key type wrapping KEY type. required for open addressing collision resolution
+- tlbt_map_KEY_VALUE           map type KEY and VALUE depend on your definitions
+- tlbt_map_KEY_VALUE_key       key type wrapping KEY type. required for open addressing collision resolution
+- tlbt_map_iterator_KEY_VALUE  iterator type
 
 functions (_ph variants require you to provide the hash):
 - tlbt_map_KEY_VALUE_get(_ph)         tries retrieving the value with a key
@@ -10,6 +11,9 @@ functions (_ph variants require you to provide the hash):
 - tlbt_map_KEY_VALUE_contains(_ph)    checks if a value exists with its key
 - tlbt_map_KEY_VALUE_clear            resets the map
 - tlbt_map_KEY_VALUE_copy             tries copying the entries from one map to another
+- tlbt_map_iterator_KEY_VALUE_init    initializes the iterator
+- tlbt_map_iterator_KEY_VALUE_reset   resets the iterator
+- tlbt_map_iterator_KEY_VALUE_iterate iterates the map
 if TLBT_DYNAMIC_MEMORY is not defined
 - tlbt_map_KEY_VALUE_init             initializes the map type (no allocations)
 if TLBT_DYNAMIC_MEMORY is defined
