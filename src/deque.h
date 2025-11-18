@@ -1,3 +1,49 @@
+/*
+types:
+- tlbt_deque_TYPE             deque type. TYPE depends on your definition
+- tlbt_deque_iterator_TYPE    deque iterator type
+
+functions:
+- tlbt_deque_TYPE_push_back        pushes an item to the back of the deque
+- tlbt_deque_TYPE_push_front       pushes an item to the front of the deque
+- tlbt_deque_TYPE_peek_back        peeks the item at the back of the deque
+- tlbt_deque_TYPE_peek_front       peeks the item at the front of the deque
+- tlbt_deque_TYPE_pop_back         pops the item at the back of the deque
+- tlbt_deque_TYPE_pop_front        pops the item at the front of the deque
+- tlbt_deque_TYPE_at               returns a pointer to the item at the given index (or NULL)
+- tlbt_deque_TYPE_copy             copies the src deque to the dest deque
+- tlbt_deque_TYPE_clear            resets the deque
+- tlbt_deque_iterator_TYPE_init    initializes the iterator
+- tlbt_deque_iterator_TYPE_reset   resets the iterator
+- tlbt_deque_iterator_TYPE_iterate iterates the deque
+if TLBT_DYNAMIC_MEMORY is not defined
+- tlbt_deque_TYPE_init             initializes the deque with given buffer
+if TLBT_DYNAMIC_MEMORY is defined
+- tlbt_deque_TYPE_create           creates the deque with allocations
+- tlbt_deque_TYPE_destroy          destroys the deque and frees memory
+- tlbt_deque_TYPE_ensure_capacity  checks if resizing is necessary and resizes by factor 2 if it is
+
+TLBT_DEFINITION      if you want to define the types and functions in a header file
+TLBT_IMPLEMENTATION  for the corresponding implementation of the definitions in a separate source file
+TLBT_STATIC          if you want to define and implement them statically in a source file
+
+=== required definitions ===
+TLBT_T                 the deque key type
+
+=== optional definitions ===
+TLBT_T_NAME            default is TLBT_T
+TLBT_ASSERT            default is assert from <assert.h>
+TLBT_BASE2_CAPACITY    will use bit operations instead of modulo
+TLBT_SIZE_T            default is size_t from <stddef.h>
+TLBT_DEQUE_NO_ITERATOR don't define an iterator struct and functions
+
+=== memory ===
+if TLBT_DYNAMIC_MEMORY is not defined, you have to provide the buffers to the init function. resizing won't work
+if TLBT_DYNAMIC_MEMORY is defined, then memory is managed by the implementation
+
+TLBT_MALLOC  if TLBT_DYNAMIC_MEMORY is defined. default is malloc from <stdlib.h>
+TLBT_FREE    if TLBT_DYNAMIC_MEMORY is defined. default is free from <stdlib.h>
+*/
 
 #define TLBT_COMBINE(a, b) a##b
 #define TLBT_COMBINE2(a, b) TLBT_COMBINE(a, b)
