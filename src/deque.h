@@ -85,10 +85,12 @@ TLBT_INLINE void TLBT_DEQUE_FUNC(destroy)(TLBT_DEQUE_TYPE *const d);
 TLBT_INLINE void TLBT_DEQUE_FUNC(ensure_capacity)(TLBT_DEQUE_TYPE *const d, const TLBT_SIZE_T capacity);
 TLBT_INLINE void TLBT_DEQUE_FUNC(push_front)(TLBT_DEQUE_TYPE *const d, TLBT_T item);
 TLBT_INLINE void TLBT_DEQUE_FUNC(push_back)(TLBT_DEQUE_TYPE *const d, TLBT_T item);
+TLBT_INLINE void TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_DEQUE_TYPE *const src);
 #else
 TLBT_INLINE void TLBT_DEQUE_FUNC(init)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T capacity, TLBT_T *buffer);
 TLBT_INLINE bool TLBT_DEQUE_FUNC(push_front)(TLBT_DEQUE_TYPE *const d, TLBT_T item);
 TLBT_INLINE bool TLBT_DEQUE_FUNC(push_back)(TLBT_DEQUE_TYPE *const d, TLBT_T item);
+TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_DEQUE_TYPE *const src);
 #endif
 
 TLBT_INLINE bool TLBT_DEQUE_FUNC(pop_front)(TLBT_DEQUE_TYPE *const d);
@@ -103,8 +105,6 @@ static inline void TLBT_DEQUE_FUNC(clear)(TLBT_DEQUE_TYPE *const d) {
   d->head = 0;
   d->tail = 0;
 }
-
-TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_DEQUE_TYPE *const src);
 
 #ifndef TLBT_DEQUE_NO_ITERATOR
 
@@ -166,15 +166,15 @@ TLBT_INLINE void TLBT_DEQUE_FUNC(ensure_capacity)(TLBT_DEQUE_TYPE *const d, cons
       memcpy(new_data + d->capacity - d->head, d->data, d->tail * sizeof(TLBT_T));
       d->tail = d->capacity - d->head + d->tail;
       d->head = 0;
-      TLBT_FREE(d->items);
-      d->items = new_data;
+      TLBT_FREE(d->data);
+      d->data = new_data;
     } else {
       TLBT_T *new_data = TLBT_MALLOC(sizeof(TLBT_T) * new_capacity);
-      memcpy(new_data, d->items, d->capacity * sizeof(TLBT_T));
-      TLBT_FREE(d->items);
-      deque->items = new_data;
+      memcpy(new_data, d->data, d->capacity * sizeof(TLBT_T));
+      TLBT_FREE(d->data);
+      d->data = new_data;
     }
-    deque->capacity = new_capacity;
+    d->capacity = new_capacity;
   }
 }
 
@@ -255,9 +255,14 @@ TLBT_INLINE TLBT_T *TLBT_DEQUE_FUNC(at)(TLBT_DEQUE_TYPE *const d, const TLBT_SIZ
   return d->count == 0 ? NULL : &d->data[TLBT_MOD(d->head + index, d->capacity)];
 }
 
+#ifdef TLBT_DYNAMIC_MEMORY
+TLBT_INLINE void TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_DEQUE_TYPE *const src) {
+  TLBT_DEQUE_FUNC(ensure_capacity)(dest, src->count);
+#else
 TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_DEQUE_TYPE *const src) {
   if (dest->capacity < src->capacity)
     return false;
+#endif
 
   if (dest->capacity == src->capacity || (src->head < src->tail)) {
     memcpy(dest->data, src->data, src->capacity);
@@ -279,8 +284,9 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
     dest->head = 0;
     dest->count = src->count;
   }
-
+#ifndef TLBT_DYNAMIC_MEMORY
   return true;
+#endif
 }
 
 #endif
