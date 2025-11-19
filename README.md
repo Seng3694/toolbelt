@@ -9,6 +9,7 @@ A lightweight collection of single-header C99 utility libraries for easy integra
 |--------------|-------------|
 | [deque.h](src/deque.h) | Double ended queue |
 | [map.h](src/map.h) | Hashmap/Hashset |
+| [arena.h](src/arena.h) | Arena allocator |
 
 ## Quick Start
 
@@ -76,7 +77,6 @@ When cloning the repository you can also run the tests with `make test` to run a
 |--------------|-------------|
 | heap.h | Min/Max heap type |
 | array.h | Regular array type |
-| arena.h | Arena allocator |
 | filesystem.h | File utilities |
 
 
