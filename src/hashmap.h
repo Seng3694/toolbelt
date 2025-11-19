@@ -519,8 +519,6 @@ TLBT_INLINE bool TLBT_MAP_FUNC(copy)(TLBT_MAP_TYPE *const dest, const TLBT_MAP_T
 
 #endif
 
-// awk '{if($1 == "#ifdef" || $1 == "#ifndef" || $1 == "#define") print $2;}' src/hashmap.h | grep -Po '^\w+' | sort -u
-// |  awk '{printf("#undef %s\n", $1);}'
 #undef TLBT_ASSERT
 #undef TLBT_BASE2_CAPACITY
 #undef TLBT_COMBINE
@@ -541,6 +539,7 @@ TLBT_INLINE bool TLBT_MAP_FUNC(copy)(TLBT_MAP_TYPE *const dest, const TLBT_MAP_T
 #undef TLBT_MALLOC
 #undef TLBT_MAP_FUNC
 #undef TLBT_MAP_FUNC_INTERNAL
+#undef TLBT_MAP_ITERATOR_FUNC
 #undef TLBT_MAP_ITERATOR_TYPE
 #undef TLBT_MAP_KEY_TYPE
 #undef TLBT_MAP_NO_ITERATOR

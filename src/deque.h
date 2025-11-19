@@ -337,9 +337,6 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
 
 #endif
 
-// awk '{if($1 == "#ifdef" || $1 == "#ifndef" || $1 == "#define") print $2;}' src/deque.h | grep -Po '^\w+' | sort -u
-// |  awk '{printf("#undef %s\n", $1);}'
-
 #undef TLBT_ASSERT
 #undef TLBT_BASE2_CAPACITY
 #undef TLBT_COMBINE
