@@ -28,7 +28,7 @@ TLBT_IMPLEMENTATION  for the corresponding implementation of the definitions in 
 TLBT_STATIC          if you want to define and implement them statically in a source file
 
 === required definitions ===
-TLBT_T                 the deque key type
+TLBT_T                 the deque type
 
 === optional definitions ===
 TLBT_T_NAME            default is TLBT_T
