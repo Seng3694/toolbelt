@@ -15,7 +15,7 @@ static void custom_free(void *ptr) {
 
 #define TLBT_MALLOC custom_alloc
 #define TLBT_FREE custom_free
-#define TLBT_STATIC
+#define TLBT_IMPLEMENTATION
 #include "../src/arena.h"
 
 int main(void) {

@@ -5,15 +5,34 @@ A lightweight collection of single-header C99 utility libraries for easy integra
 
 ## Current Modules
 
-| Header       | Description |
-|--------------|-------------|
-| [deque.h](src/deque.h) | Double ended queue |
-| [map.h](src/map.h) | Hashmap/Hashset |
-| [arena.h](src/arena.h) | Arena allocator |
+| Header       | Description | Template Header |
+|--------------|-------------|-----------------|
+| [deque.h](src/deque.h) | Double ended queue | yes |
+| [map.h](src/map.h) | Hashmap/Hashset | yes |
+| [arena.h](src/arena.h) | Arena allocator | no |
 
 ## Quick Start
 
-Copy the header you want to use from the `src` directory into your project or clone the whole repository.
+Copy the header you want to use from the `src` directory into your project or clone the whole repository. There are two different kinds of header files:
+
+### Regular header files
+
+```c
+// main.c
+// define this macro once in a source file
+#define TLBT_IMPLEMENTATION
+#include "arena.h"
+
+int main(void) {
+  // tlbt_arena type and functions are defined and implemented
+  tlbt_arena a = {0};
+  // see arena.h and tests for usage
+}
+```
+
+### Template header files
+
+You can define the type, functions and behavior yourself with macros. Define the macros before including the file. These header files can be included as often as you want because they are for defining your own types rather than providing them.
 
 Defining and implementing the types and functions in a single source file:
 
@@ -23,14 +42,23 @@ Defining and implementing the types and functions in a single source file:
 #define TLBT_STATIC
 #include "deque.h"
 
+// it's completely fine to include it again with a different type parameter
+#define TLBT_T char*
+// necessary because "char*" can't be used in the name due to the asterisk
+// you can also wrap the pointer in a struct or typedef it
+#define TLBT_T_NAME str
+#define TLBT_STATIC
+#include "deque.h"
+
 int main(void) {
-  // deque type and functions defined now
-  tlbt_deque_int d = {0};
+  // tlbt_deque_int/str type and functions are only defined in this file
+  tlbt_deque_int d1 = {0};
+  tlbt_deque_str d2 = {0};
   // see deque.h and tests for usage
 }
 ```
 
-Defining and implementing in separate files for reuse:
+If you want to reuse your defined type, you should not include them statically in every source file but define and implement them in separate files:
 
 header file:
 
