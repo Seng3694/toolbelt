@@ -11,6 +11,7 @@ A lightweight collection of single-header C99 utility libraries for easy integra
 | [map.h](src/map.h) | Hashmap/Hashset | yes |
 | [arena.h](src/arena.h) | Arena allocator | no |
 | [heap.h](src/heap.h) | Min/Max heap | yes |
+| [bitutils.h](src/bitutils.h) | Bit utilities | no |
 
 ## Quick Start
 
@@ -98,15 +99,6 @@ For more detailed usage please check the documentation inside each header or the
 ## Tests 
 
 When cloning the repository you can also run the tests with `make test` to run all of them or `make build/deque_default && ./build/deque_default` to run a specific one.
-
-
-## Planned Modules
-
-| Header       | Description |
-|--------------|-------------|
-| array.h | Regular array type |
-| filesystem.h | File utilities |
-
 
 ## License
 
