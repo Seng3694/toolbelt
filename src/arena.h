@@ -96,3 +96,9 @@ void *tlbt_arena_malloc(size_t size, tlbt_arena *const a) {
 
 #endif
 
+#undef TLBT_ALIGN_TO_8
+#undef TLBT_ASSERT
+#undef TLBT_FREE
+#undef TLBT_IMPLEMENTATION
+#undef TLBT_MALLOC
+
