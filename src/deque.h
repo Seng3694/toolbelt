@@ -33,6 +33,7 @@ TLBT_T                 the deque type
 === optional definitions ===
 TLBT_T_NAME            default is TLBT_T
 TLBT_ASSERT            default is assert from <assert.h>
+TLBT_MEMCPY            default is memcpy from <string.h>
 TLBT_BASE2_CAPACITY    will use bit operations instead of modulo
 TLBT_SIZE_T            default is size_t from <stddef.h>
 TLBT_DEQUE_NO_ITERATOR don't define an iterator struct and functions
@@ -86,6 +87,11 @@ TLBT_FREE    if TLBT_DYNAMIC_MEMORY is defined. default is free from <stdlib.h>
 #ifndef TLBT_SIZE_T
 #include <stddef.h>
 #define TLBT_SIZE_T size_t
+#endif
+
+#ifndef TLBT_MEMCPY
+#include <string.h>
+#define TLBT_MEMCPY memcpy
 #endif
 
 #define TLBT_DEQUE_TYPE TLBT_COMBINE2(tlbt_deque_, TLBT_T_NAME)
@@ -207,16 +213,16 @@ TLBT_INLINE void TLBT_DEQUE_FUNC(ensure_capacity)(TLBT_DEQUE_TYPE *const d, cons
       // new (size 8): [1] [2] [3] [4] [5] [-] [-] [-]
       TLBT_T *new_data = TLBT_MALLOC(sizeof(TLBT_T) * new_capacity);
       // copy [1] [2] [3]
-      memcpy(new_data, d->data + d->head, (d->capacity - d->head) * sizeof(TLBT_T));
+      TLBT_MEMCPY(new_data, d->data + d->head, (d->capacity - d->head) * sizeof(TLBT_T));
       // copy [4] [5]
-      memcpy(new_data + d->capacity - d->head, d->data, d->tail * sizeof(TLBT_T));
+      TLBT_MEMCPY(new_data + d->capacity - d->head, d->data, d->tail * sizeof(TLBT_T));
       d->tail = d->capacity - d->head + d->tail;
       d->head = 0;
       TLBT_FREE(d->data);
       d->data = new_data;
     } else {
       TLBT_T *new_data = TLBT_MALLOC(sizeof(TLBT_T) * new_capacity);
-      memcpy(new_data, d->data, d->capacity * sizeof(TLBT_T));
+      TLBT_MEMCPY(new_data, d->data, d->capacity * sizeof(TLBT_T));
       TLBT_FREE(d->data);
       d->data = new_data;
     }
@@ -311,7 +317,7 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
 #endif
 
   if (dest->capacity == src->capacity || (src->head < src->tail)) {
-    memcpy(dest->data, src->data, src->capacity);
+    TLBT_MEMCPY(dest->data, src->data, src->capacity);
     dest->head = src->head;
     dest->tail = src->tail;
     dest->count = src->count;
@@ -323,9 +329,9 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
     // copying it as is would mean that the new 4 slots are also valid items
     // goal [1][2][3][4][5][ ][ ][ ][ ]
     // copy [1] [2] [3]
-    memcpy(dest->data, src->data + src->head, (src->capacity - src->head) * sizeof(TLBT_T));
+    TLBT_MEMCPY(dest->data, src->data + src->head, (src->capacity - src->head) * sizeof(TLBT_T));
     // copy [4] [5]
-    memcpy(dest->data + src->capacity - src->head, src->data, src->tail * sizeof(TLBT_T));
+    TLBT_MEMCPY(dest->data + src->capacity - src->head, src->data, src->tail * sizeof(TLBT_T));
     dest->tail = src->capacity - src->head + src->tail;
     dest->head = 0;
     dest->count = src->count;
@@ -354,6 +360,7 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
 #undef TLBT_IMPLEMENTATION
 #undef TLBT_INLINE
 #undef TLBT_MALLOC
+#undef TLBT_MEMCPY
 #undef TLBT_MOD
 #undef TLBT_SIZE_T
 #undef TLBT_STATIC

@@ -29,6 +29,7 @@ TLBT_COMPARE         function for comparing two items of TYPE
 TLBT_T_NAME      default is TLBT_T
 TLBT_MAX_HEAP    default is a min heap (tlbt_min_heap_TYPE)
 TLBT_ASSERT      default is assert from <assert.h>
+TLBT_MEMCPY      default is memcpy from <string.h>
 TLBT_SIZE_T      default is size_t from <stddef.h>
 
 === memory ===
@@ -89,6 +90,11 @@ TLBT_FREE    if TLBT_DYNAMIC_MEMORY is defined. default is free from <stdlib.h>
 #ifndef TLBT_SIZE_T
 #include <stddef.h>
 #define TLBT_SIZE_T size_t
+#endif
+
+#ifndef TLBT_MEMCPY
+#include <string.h>
+#define TLBT_MEMCPY memcpy
 #endif
 
 #define TLBT_HEAP_TYPE TLBT_COMBINE2(tlbt_, TLBT_COMBINE2(TLBT_HEAP_SORT_TYPE, TLBT_COMBINE2(_heap_, TLBT_T_NAME)))
@@ -169,7 +175,7 @@ TLBT_INLINE void TLBT_HEAP_FUNC(build)(TLBT_HEAP_TYPE *const h, TLBT_SIZE_T coun
   h->count = count;
   h->capacity = count;
   h->data = TLBT_MALLOC(count * sizeof(TLBT_T));
-  memcpy(h->data, buffer, sizeof(TLBT_T) * count);
+  TLBT_MEMCPY(h->data, buffer, sizeof(TLBT_T) * count);
   for (long long int i = ((long long int)count / 2) - 1; i >= 0; --i) {
     TLBT_HEAP_FUNC_INTERNAL(bubble_down)(h, i);
   }
@@ -197,7 +203,7 @@ TLBT_INLINE void TLBT_HEAP_FUNC_INTERNAL(ensure_capacity)(TLBT_HEAP_TYPE *const 
       h->capacity *= 2;
     TLBT_T *new_data = TLBT_MALLOC(h->capacity * sizeof(TLBT_T));
     TLBT_ASSERT(new_data);
-    memcpy(new_data, h->data, h->count * sizeof(TLBT_T));
+    TLBT_MEMCPY(new_data, h->data, h->count * sizeof(TLBT_T));
     TLBT_FREE(h->data);
     h->data = new_data;
   }
@@ -233,7 +239,7 @@ TLBT_INLINE bool TLBT_HEAP_FUNC(copy)(TLBT_HEAP_TYPE *const dest, const TLBT_HEA
 #endif
 
   dest->count = src->count;
-  memcpy(dest->data, src->data, sizeof(TLBT_T) * src->count);
+  TLBT_MEMCPY(dest->data, src->data, sizeof(TLBT_T) * src->count);
 
 #ifndef TLBT_DYNAMIC_MEMORY
   return true;
@@ -336,6 +342,7 @@ TLBT_INLINE void TLBT_HEAP_FUNC_INTERNAL(bubble_down)(TLBT_HEAP_TYPE *const h, T
 #undef TLBT_INLINE
 #undef TLBT_MALLOC
 #undef TLBT_MAX_HEAP
+#undef TLBT_MEMCPY
 #undef TLBT_MIN_HEAP
 #undef TLBT_SIZE_T
 #undef TLBT_STATIC
