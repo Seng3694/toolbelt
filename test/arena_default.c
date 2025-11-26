@@ -1,4 +1,5 @@
 #include "common.h"
+#include "../src/assert.h"
 
 static int allocations = 0;
 static int frees = 0;
@@ -19,19 +20,21 @@ static void custom_free(void *ptr) {
 #include "../src/arena.h"
 
 int main(void) {
-
+  TLBT_TEST_START();
   // case with allocating memory with only a single arena
   {
     tlbt_arena a = {0};
     tlbt_arena_create(1020, &a);
-    TLBT_TEST_ASSERT(a.capacity == 1024, "arena should have aligned capacity with a multiple of 8");
-    TLBT_TEST_ASSERT(tlbt_arena_malloc(1000, &a) != NULL, "allocation should have succeeded");
-    TLBT_TEST_ASSERT(tlbt_arena_malloc(1000, &a) == NULL, "allocation should have failed");
-    TLBT_TEST_ASSERT(a.current != 0, "arena should not be empty");
+    tlbt_assert_fmt(a.capacity == 1024, "arena should have aligned capacity with a multiple of 8 (actual %zu)",
+                    a.capacity);
+    tlbt_assert_msg(tlbt_arena_malloc(1000, &a) != NULL, "allocation should have succeeded");
+    tlbt_assert_msg(tlbt_arena_malloc(1000, &a) == NULL, "allocation should have failed");
+    tlbt_assert_fmt(a.current != 0, "arena should not be empty (current %zu)", a.current);
     tlbt_arena_reset(&a);
-    TLBT_TEST_ASSERT(a.current == 0, "arena should be empty");
+    tlbt_assert_fmt(a.current == 0, "arena should be empty (current %zu)", a.current);
     tlbt_arena_destroy(&a);
-    TLBT_TEST_ASSERT(allocations == 1 && frees == 1, "there should have been only one allocation");
+    tlbt_assert_fmt(allocations == 1 && frees == 1, "there should have been only one allocation (alloc %d, free %d)",
+                    allocations, frees);
   }
 
   allocations = 0;
@@ -44,29 +47,33 @@ int main(void) {
     tlbt_arena sub_arenas[5] = {0};
     const size_t sub_arena_capacities[5] = {23, 57, 93, 42, 81};
     tlbt_arena_create_root_and_sub_arenas(&root, 5, sub_arena_capacities, sub_arenas);
-    TLBT_TEST_ASSERT(root.current != 0, "arena should not be empty");
+    tlbt_assert_fmt(root.current != 0, "arena should not be empty (current %zu)", root.current);
     size_t sum_of_capacities = 0;
     for (size_t i = 0; i < 5; ++i) {
       sum_of_capacities += sub_arenas[i].capacity;
       // it can be bigger due to alignment
-      TLBT_TEST_ASSERT(sub_arenas[i].capacity >= sub_arena_capacities[i], "capacity should be the same or bigger");
+      tlbt_assert_fmt(sub_arenas[i].capacity >= sub_arena_capacities[i],
+                      "capacity should be the same or bigger (%zu >= %zu)", sub_arenas[i].capacity,
+                      sub_arena_capacities[i]);
     }
     // it's probably the same but can be bigger due to alignment
-    TLBT_TEST_ASSERT(root.capacity >= sum_of_capacities, "root capacity should be the same or bigger than sum");
+    tlbt_assert_fmt(root.capacity >= sum_of_capacities,
+                    "root capacity should be the same or bigger than sum (root %zu, sum %zu)", root.capacity,
+                    sum_of_capacities);
 
     for (size_t i = 0; i < 5; ++i) {
-      TLBT_TEST_ASSERT(tlbt_arena_malloc(8, &sub_arenas[i]) != NULL, "allocation should have succeeded");
-      TLBT_TEST_ASSERT(tlbt_arena_malloc(1000, &sub_arenas[i]) == NULL, "allocation should have failed");
-      TLBT_TEST_ASSERT(sub_arenas[i].current != 0, "arena should not be empty");
+      tlbt_assert_msg(tlbt_arena_malloc(8, &sub_arenas[i]) != NULL, "allocation should have succeeded");
+      tlbt_assert_msg(tlbt_arena_malloc(1000, &sub_arenas[i]) == NULL, "allocation should have failed");
+      tlbt_assert_fmt(sub_arenas[i].current != 0, "arena should not be empty (current %zu)", sub_arenas[i].current);
       tlbt_arena_reset(&sub_arenas[i]);
-      TLBT_TEST_ASSERT(sub_arenas[i].current == 0, "arena should be empty");
+      tlbt_assert_fmt(sub_arenas[i].current == 0, "arena should be empty (current %zu)", sub_arenas[i].current);
     }
 
     // only the root has to be freed because the sub arenas used the memory from the root
     tlbt_arena_destroy(&root);
-    TLBT_TEST_ASSERT(allocations == 1 && frees == 1, "there should have been only one allocation");
+    tlbt_assert_fmt(allocations == 1 && frees == 1, "there should have been only one allocation (alloc %d, free %d)",
+                    allocations, frees);
   }
-
   TLBT_TEST_DONE();
 }
 

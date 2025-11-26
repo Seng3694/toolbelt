@@ -1,4 +1,5 @@
 #include "common.h"
+#include "../src/assert.h"
 
 static bool internal_assert_triggered = false;
 #define INTERNAL_ASSERT(cond)                                                                                          \
@@ -39,12 +40,13 @@ static void custom_free(void *ptr) {
 #include "../src/hashmap.h"
 
 int main(void) {
+  TLBT_TEST_START();
   tlbt_map_str_point m = {0};
   tlbt_map_str_point_create(&m, 16);
 
-  TLBT_TEST_ASSERT(!internal_assert_triggered, "there should be no failed assertion");
-  TLBT_TEST_ASSERT(m.capacity == 16, "capacity should be 16");
-  TLBT_TEST_ASSERT(m.count == 0, "count should be 0");
+  tlbt_assert_msg(!internal_assert_triggered, "there should be no failed assertion");
+  tlbt_assert_msg(m.capacity == 16, "capacity should be 16");
+  tlbt_assert_msg(m.count == 0, "count should be 0");
 
   const char *test_strings[16] = {"hello",   "world", "!",      "these", "are",  "some", "unique", "test",
                                   "strings", "I",     "should", "not",   "need", "more", "than",   "sixteen"};
@@ -58,30 +60,30 @@ int main(void) {
   for (int i = 0; i < 16; ++i) {
     string_slice key = {.data = test_strings[i], .len = strlen(test_strings[i])};
     const bool success = tlbt_map_str_point_insert(&m, key, test_values[i]);
-    TLBT_TEST_ASSERT(success, "should have inserted successfully");
+    tlbt_assert_msg(success, "should have inserted successfully");
   }
-  TLBT_TEST_ASSERT(m.capacity == 32, "capacity should be 32");
-  TLBT_TEST_ASSERT(m.count == 16, "count should be 16");
+  tlbt_assert_msg(m.capacity == 32, "capacity should be 32");
+  tlbt_assert_msg(m.count == 16, "count should be 16");
 
   // contains test
   for (int i = 0; i < 16; ++i) {
     string_slice key = {.data = test_strings[i], .len = strlen(test_strings[i])};
     const bool contains = tlbt_map_str_point_contains(&m, key);
-    TLBT_TEST_ASSERT(contains, "should have contained element");
+    tlbt_assert_msg(contains, "should have contained element");
   }
 
   // remove test
   for (int i = 0; i < 16; ++i) {
     string_slice key = {.data = test_strings[i], .len = strlen(test_strings[i])};
     const bool removed = tlbt_map_str_point_remove(&m, key);
-    TLBT_TEST_ASSERT(removed, "should have removed element");
+    tlbt_assert_msg(removed, "should have removed element");
   }
-  TLBT_TEST_ASSERT(m.capacity == 32, "capacity should be 32");
-  TLBT_TEST_ASSERT(m.count == 0, "count should be 0 now");
+  tlbt_assert_msg(m.capacity == 32, "capacity should be 32");
+  tlbt_assert_msg(m.count == 0, "count should be 0 now");
 
   tlbt_map_str_point_destroy(&m);
 
-  TLBT_TEST_ASSERT(allocations == frees, "there should be the same amount of allocations and frees");
+  tlbt_assert_msg(allocations == frees, "there should be the same amount of allocations and frees");
   TLBT_TEST_DONE();
 }
 

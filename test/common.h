@@ -6,26 +6,17 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#define TLBT_TEST_ASSERT(cond, message)                                                                                \
-  do {                                                                                                                 \
-    if (!(cond)) {                                                                                                     \
-      fprintf(stderr, "Assertion failed: '%s' in file '%s' at line %d\n", message, __FILE__, __LINE__);                \
-      return 1;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
+#include <time.h>
 
 #define TLBT_TEST_START()                                                                                              \
-  do {                                                                                                                 \
-    fprintf(stdout, "Starting tests in '%s'.\n", __FILE__);                                                            \
-    return 0;                                                                                                          \
-  } while (0)
+  clock_t _test_start_time = clock();                                                                                  \
+  fprintf(stdout, "Starting tests in '%s'.\n", __FILE__)
 
 #define TLBT_TEST_DONE()                                                                                               \
-  do {                                                                                                                 \
-    fprintf(stdout, "All tests in '%s' ran successfully.\n", __FILE__);                                                \
-    return 0;                                                                                                          \
-  } while (0)
+  clock_t _test_end_time = clock();                                                                                    \
+  fprintf(stdout, "All tests in '%s' ran successfully in %f s.\n", __FILE__,                                           \
+          (float)(_test_end_time - _test_start_time) / CLOCKS_PER_SEC);                                                \
+  return 0
 
 typedef struct string_slice {
   const char *data;
