@@ -12,6 +12,7 @@ A lightweight collection of single-header C99 utility libraries for easy integra
 | [arena.h](src/arena.h) | Arena allocator | no |
 | [heap.h](src/heap.h) | Min/Max heap | yes |
 | [bitutils.h](src/bitutils.h) | Bit utilities | no |
+| [assert.h](src/assert.h) | Assert macros | no |
 
 ## Quick Start
 
