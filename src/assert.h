@@ -33,10 +33,18 @@
     }                                                                                                                  \
   } while (0)
 
+#define tlbt_assert_unreachable()                                                                                      \
+  do {                                                                                                                 \
+    fprintf(stderr, "Assertion failed: 'should never reach'\nFile: '%s:%d'\nFunction: '%s'\n", __FILE__, __LINE__,     \
+            __FUNCTION__);                                                                                             \
+    abort();                                                                                                           \
+  } while (0)
+
 #else
 
 #define tlbt_assert(cond)
 #define tlbt_assert_msg(cond, message)
 #define tlbt_assert_fmt(cond, message, ...)
+#define tlbt_assert_unreachable()
 
 #endif
