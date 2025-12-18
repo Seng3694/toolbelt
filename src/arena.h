@@ -17,9 +17,6 @@ TLBT_MALLOC  default is malloc from <stdlib.h>
 TLBT_FREE    default is free from <stdlib.h>
 */
 
-#ifndef TLBT_ARENA_H
-#define TLBT_ARENA_H
-
 #ifndef TLBT_MALLOC
 #include <stdlib.h>
 #define TLBT_MALLOC malloc
@@ -36,6 +33,9 @@ TLBT_FREE    default is free from <stdlib.h>
 #include <stddef.h>
 
 #define TLBT_ALIGN_TO_8(x) (((x) + 7) & (~(size_t)7))
+
+#ifndef TLBT_ARENA_H
+#define TLBT_ARENA_H
 
 typedef struct tlbt_arena {
   size_t current;
