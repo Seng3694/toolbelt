@@ -324,7 +324,7 @@ TLBT_INLINE TLBT_SIZE_T TLBT_MAP_FUNC_INTERNAL(find_empty)(TLBT_MAP_KEY_TYPE *ke
 TLBT_INLINE void TLBT_MAP_FUNC(create)(TLBT_MAP_TYPE *const m, TLBT_SIZE_T capacity) {
   m->capacity = capacity;
 #ifdef TLBT_BASE2_CAPACITY
-  TLBT_ASSERT(capacity / 2.0f == (float)(int)(capacity / 2.0f));
+  TLBT_ASSERT((capacity != 0 && (capacity & (capacity - 1)) == 0));
 #endif
   m->keys = TLBT_MALLOC(sizeof(TLBT_MAP_KEY_TYPE) * capacity);
   memset(m->keys, 0, sizeof(TLBT_MAP_KEY_TYPE) * capacity);
@@ -393,7 +393,7 @@ TLBT_INLINE void TLBT_MAP_FUNC(init)(TLBT_MAP_TYPE *const m, TLBT_SIZE_T capacit
   memset(m->keys, 0, sizeof(TLBT_MAP_KEY_TYPE) * capacity);
   m->capacity = capacity;
 #ifdef TLBT_BASE2_CAPACITY
-  TLBT_ASSERT(capacity / 2.0f == (float)(int)(capacity / 2.0f));
+  TLBT_ASSERT((capacity != 0 && (capacity & (capacity - 1)) == 0));
 #endif
   m->count = 0;
 }

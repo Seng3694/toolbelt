@@ -187,6 +187,9 @@ static inline bool TLBT_DEQUE_ITERATOR_FUNC(iterate)(TLBT_DEQUE_ITERATOR_TYPE *c
 #ifdef TLBT_DYNAMIC_MEMORY
 
 TLBT_INLINE void TLBT_DEQUE_FUNC(create)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T capacity) {
+#ifdef TLBT_BASE2_CAPACITY
+  TLBT_ASSERT((capacity != 0 && (capacity & (capacity - 1)) == 0));
+#endif
   d->data = TLBT_MALLOC(sizeof(TLBT_T) * capacity);
   TLBT_ASSERT(d->data);
   d->capacity = capacity;
@@ -238,7 +241,7 @@ TLBT_INLINE void TLBT_DEQUE_FUNC(init)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T cap
   d->tail = 0;
   d->data = buffer;
 #ifdef TLBT_BASE2_CAPACITY
-  TLBT_ASSERT(capacity / 2.0f == (float)(int)(capacity / 2.0f));
+  TLBT_ASSERT((capacity != 0 && (capacity & (capacity - 1)) == 0));
 #endif
 }
 #endif

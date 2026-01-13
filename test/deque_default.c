@@ -22,7 +22,7 @@ int main(void) {
 
   int buffer[16] = {0};
   tlbt_deque_int d = {0};
-  tlbt_deque_int_init(&d, 13, buffer);
+  tlbt_deque_int_init(&d, 12, buffer);
   tlbt_assert_msg(internal_assert_triggered, "internal assert should have triggered because of no base2 capacity");
   internal_assert_triggered = false;
 

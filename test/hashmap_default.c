@@ -29,7 +29,7 @@ int main(void) {
   point values[16] = {0};
 
   tlbt_map_str_point m = {0};
-  tlbt_map_str_point_init(&m, 13, keys, values);
+  tlbt_map_str_point_init(&m, 12, keys, values);
   tlbt_assert_msg(internal_assert_triggered, "internal assert should have triggered because of no base2 capacity");
   internal_assert_triggered = false;
 
