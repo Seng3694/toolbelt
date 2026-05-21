@@ -65,11 +65,11 @@ int main(void) {
 
   // iterator test with empty map
   {
-    string_slice *key = NULL;
+    const string_slice *key = NULL;
     point *value = NULL;
     tlbt_map_iterator_str_point iter = {0};
     tlbt_map_iterator_str_point_init(&iter, &m);
-    bool iterated = tlbt_map_iterator_str_point_iterate(&iter, &key, &value);
+    bool iterated = tlbt_map_iterator_str_point_iterate_ref(&iter, &key, &value);
     tlbt_assert_msg(!iterated, "should not be able to iterate because there are no elements");
   }
 
@@ -114,10 +114,33 @@ int main(void) {
     tlbt_assert_msg(!found, "shouldn't' have found element");
   }
 
+  // ref iterator test
+  {
+    const string_slice *key = NULL;
+    point *value = NULL;
+    tlbt_map_iterator_str_point iter = {0};
+    tlbt_map_iterator_str_point_init(&iter, &m);
+    int iterations = 0;
+    while (tlbt_map_iterator_str_point_iterate_ref(&iter, &key, &value)) {
+      bool correct_pair = false;
+      // try finding the pair in the source data
+      for (int i = 0; i < 8; ++i) {
+        if (strcmp(key->data, test_strings[i]) == 0) {
+          if (value->x == test_values[i].x && value->y == test_values[i].y) {
+            correct_pair = true;
+          }
+        }
+      }
+      tlbt_assert_msg(correct_pair, "iterated kvp not found in source data");
+      ++iterations;
+    }
+    tlbt_assert_msg(iterations == m.count, "iteration count different from element count");
+  }
+
   // iterator test
   {
-    string_slice *key = NULL;
-    point *value = NULL;
+    string_slice key = {0};
+    point value = {0};
     tlbt_map_iterator_str_point iter = {0};
     tlbt_map_iterator_str_point_init(&iter, &m);
     int iterations = 0;
@@ -125,8 +148,8 @@ int main(void) {
       bool correct_pair = false;
       // try finding the pair in the source data
       for (int i = 0; i < 8; ++i) {
-        if (strcmp(key->data, test_strings[i]) == 0) {
-          if (value->x == test_values[i].x && value->y == test_values[i].y) {
+        if (strcmp(key.data, test_strings[i]) == 0) {
+          if (value.x == test_values[i].x && value.y == test_values[i].y) {
             correct_pair = true;
           }
         }
@@ -148,11 +171,11 @@ int main(void) {
     tlbt_assert_msg(success, "should have succeeded copying");
     tlbt_assert_msg(m.count == m2.count, "should have the same count");
 
-    string_slice *key = NULL;
+    const string_slice *key = NULL;
     point *value = NULL;
     tlbt_map_iterator_str_point iter = {0};
     tlbt_map_iterator_str_point_init(&iter, &m2);
-    while (tlbt_map_iterator_str_point_iterate(&iter, &key, &value)) {
+    while (tlbt_map_iterator_str_point_iterate_ref(&iter, &key, &value)) {
       point value2 = {0};
       const bool contains = tlbt_map_str_point_get(&m, *key, &value2);
       tlbt_assert_msg(contains, "src map should contain the key");

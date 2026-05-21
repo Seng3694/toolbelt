@@ -5,15 +5,16 @@ types:
 - tlbt_map_iterator_KEY_VALUE  iterator type
 
 functions (_ph variants require you to provide the hash):
-- tlbt_map_KEY_VALUE_get(_ph)         tries retrieving the value with a key
-- tlbt_map_KEY_VALUE_remove(_ph)      tries removing the entry with a key
-- tlbt_map_KEY_VALUE_insert(_ph)      tries inserting the entry with key and value
-- tlbt_map_KEY_VALUE_contains(_ph)    checks if a value exists with its key
-- tlbt_map_KEY_VALUE_clear            resets the map
-- tlbt_map_KEY_VALUE_copy             tries copying the entries from one map to another
-- tlbt_map_iterator_KEY_VALUE_init    initializes the iterator
-- tlbt_map_iterator_KEY_VALUE_reset   resets the iterator
-- tlbt_map_iterator_KEY_VALUE_iterate iterates the map
+- tlbt_map_KEY_VALUE_get(_ph)             tries retrieving the value with a key
+- tlbt_map_KEY_VALUE_remove(_ph)          tries removing the entry with a key
+- tlbt_map_KEY_VALUE_insert(_ph)          tries inserting the entry with key and value
+- tlbt_map_KEY_VALUE_contains(_ph)        checks if a value exists with its key
+- tlbt_map_KEY_VALUE_clear                resets the map
+- tlbt_map_KEY_VALUE_copy                 tries copying the entries from one map to another
+- tlbt_map_iterator_KEY_VALUE_init        initializes the iterator
+- tlbt_map_iterator_KEY_VALUE_reset       resets the iterator
+- tlbt_map_iterator_KEY_VALUE_iterate     iterates the map and returns a copy
+- tlbt_map_iterator_KEY_VALUE_iterate_ref iterates the map and returns a reference
 if TLBT_DYNAMIC_MEMORY is not defined
 - tlbt_map_KEY_VALUE_init             initializes the map type (no allocations)
 if TLBT_DYNAMIC_MEMORY is defined
@@ -236,23 +237,38 @@ static inline void TLBT_MAP_ITERATOR_FUNC(reset)(TLBT_MAP_ITERATOR_TYPE *const i
 }
 
 #ifdef TLBT_VALUE_T
-static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const iter, TLBT_KEY_T **out_key,
-                                                   TLBT_VALUE_T **out_value) {
+static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const iter, TLBT_KEY_T *out_key,
+                                                   TLBT_VALUE_T *out_value) {
 #else
-static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const iter, TLBT_KEY_T **out_key) {
+static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const iter, TLBT_KEY_T *out_key) {
 #endif
   TLBT_MAP_TYPE *m = iter->map;
 
-  // this function is iterating over the whole capacity even if there is only one element in the map because I don't
-  // know where the elements are at. I could count the elements found inside the iterator and break early once I have
-  // found the amount of elements specified by the map.count field but technically they should be evenly spread so while
-  // searching for the elements you will probably go through almost all of the elements anyway. if iterating all
-  // elements is a very common operation, then I should consider adding another field to every key specifying the gap to
-  // the next element. this makes inserting slower because I have to search for the previous element but
-  // it would speed up iterating a lot. this could even be controlled by a macro but for now this is fine.
-  // most of the time I only iterate once before destroying/resetting the whole map. inserts happen more often so even
-  // if there was a speed gain on the iteration, the speed loss on the insertions would accumulate to more than is
-  // gained through the iteration speed for most cases. rambling over
+  while (iter->i < m->capacity && !(m->keys[iter->i].index & TLBT_OCCUPIED_BIT))
+    ++iter->i;
+
+  if (iter->i >= m->capacity)
+    return false;
+
+  *out_key = m->keys[iter->i].key;
+#ifdef TLBT_VALUE_T
+  *out_value = m->values[iter->i];
+#endif
+  ++iter->i;
+
+  return true;
+}
+
+#endif
+
+#ifdef TLBT_VALUE_T
+static inline bool TLBT_MAP_ITERATOR_FUNC(iterate_ref)(TLBT_MAP_ITERATOR_TYPE *const iter, const TLBT_KEY_T **out_key,
+                                                       TLBT_VALUE_T **out_value) {
+#else
+static inline bool TLBT_MAP_ITERATOR_FUNC(iterate_ref)(TLBT_MAP_ITERATOR_TYPE *const iter, const TLBT_KEY_T **out_key) {
+#endif
+  TLBT_MAP_TYPE *m = iter->map;
+
   while (iter->i < m->capacity && !(m->keys[iter->i].index & TLBT_OCCUPIED_BIT))
     ++iter->i;
 
@@ -267,8 +283,6 @@ static inline bool TLBT_MAP_ITERATOR_FUNC(iterate)(TLBT_MAP_ITERATOR_TYPE *const
 
   return true;
 }
-
-#endif
 
 #endif
 

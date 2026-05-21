@@ -74,6 +74,13 @@ int main(void) {
     while (tlbt_deque_iterator_int_iterate(&iter, &v)) {
       tlbt_assert_msg(*tlbt_deque_int_at(&d, i++) == v, "values should be the same");
     }
+
+    tlbt_deque_iterator_int_reset(&iter);
+    i = 0;
+    int *ref = NULL;
+    while (tlbt_deque_iterator_int_iterate_ref(&iter, &ref)) {
+      tlbt_assert_msg(tlbt_deque_int_at(&d, i++) == ref, "addresses should be the same");
+    }
   }
 
   for (int i = 0; i < 4; ++i) {

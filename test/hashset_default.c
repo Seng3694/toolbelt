@@ -43,10 +43,10 @@ int main(void) {
 
   // iterator test with empty map
   {
-    string_slice *key = NULL;
+    const string_slice *key = NULL;
     tlbt_set_iterator_str iter = {0};
     tlbt_set_iterator_str_init(&iter, &m);
-    bool iterated = tlbt_set_iterator_str_iterate(&iter, &key);
+    bool iterated = tlbt_set_iterator_str_iterate_ref(&iter, &key);
     tlbt_assert_msg(!iterated, "should not be able to iterate because there are no elements");
   }
 
@@ -76,9 +76,30 @@ int main(void) {
     tlbt_assert_msg(!contains, "shouldn't' have contained element");
   }
 
+  // ref iterator test
+  {
+    const string_slice *key = NULL;
+    tlbt_set_iterator_str iter = {0};
+    tlbt_set_iterator_str_init(&iter, &m);
+    int iterations = 0;
+    while (tlbt_set_iterator_str_iterate_ref(&iter, &key)) {
+      bool found = false;
+      // try finding the key in the source data
+      for (int i = 0; i < 8; ++i) {
+        if (strcmp(key->data, test_strings[i]) == 0) {
+          found = true;
+          break;
+        }
+      }
+      tlbt_assert_msg(found, "iterated key not found in source data");
+      ++iterations;
+    }
+    tlbt_assert_msg(iterations == m.count, "iteration count different from element count");
+  }
+
   // iterator test
   {
-    string_slice *key = NULL;
+    string_slice key = {0};
     tlbt_set_iterator_str iter = {0};
     tlbt_set_iterator_str_init(&iter, &m);
     int iterations = 0;
@@ -86,7 +107,7 @@ int main(void) {
       bool found = false;
       // try finding the key in the source data
       for (int i = 0; i < 8; ++i) {
-        if (strcmp(key->data, test_strings[i]) == 0) {
+        if (strcmp(key.data, test_strings[i]) == 0) {
           found = true;
           break;
         }
@@ -107,10 +128,10 @@ int main(void) {
     tlbt_assert_msg(success, "should have succeeded copying");
     tlbt_assert_msg(m.count == m2.count, "should have the same count");
 
-    string_slice *key = NULL;
+    const string_slice *key = NULL;
     tlbt_set_iterator_str iter = {0};
     tlbt_set_iterator_str_init(&iter, &m2);
-    while (tlbt_set_iterator_str_iterate(&iter, &key)) {
+    while (tlbt_set_iterator_str_iterate_ref(&iter, &key)) {
       const bool contains = tlbt_set_str_contains(&m, *key);
       tlbt_assert_msg(contains, "src map should contain the key");
     }
