@@ -15,16 +15,16 @@
 // same type with different name should be fine
 #define TLBT_T int
 #define TLBT_T_NAME integer
-#define TLBT_COMPARE(a, b) (a - b)
+#define TLBT_COMPARE_REF(a, b) ((*a) - (*b))
 #include "../src/heap.h"
 #define TLBT_T int
 #define TLBT_T_NAME integer
-#define TLBT_COMPARE(a, b) (a - b)
+#define TLBT_COMPARE_REF(a, b) ((*a) - (*b))
 #include "../src/heap.h"
 
 #define TLBT_T int
 #define TLBT_T_NAME integer
-#define TLBT_COMPARE(a, b) (a - b)
+#define TLBT_COMPARE_REF(a, b) ((*a) - (*b))
 #define TLBT_STATIC
 #include "../src/heap.h"
 

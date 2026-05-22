@@ -22,8 +22,8 @@ TLBT_IMPLEMENTATION  for the corresponding implementation of the definitions in 
 TLBT_STATIC          if you want to define and implement them statically in a source file
 
 === required definitions ===
-TLBT_T               the heap type
-TLBT_COMPARE         function for comparing two items of TYPE
+TLBT_T                            the heap type
+TLBT_COMPARE or TLBT_COMPARE_REF  function for comparing two items of TYPE (either by value or reference)
 
 === optional definitions ===
 TLBT_T_NAME      default is TLBT_T
@@ -47,8 +47,8 @@ TLBT_FREE    if TLBT_DYNAMIC_MEMORY is defined. default is free from <stdlib.h>
 #error "TLBT_T must be defined"
 #endif
 
-#ifndef TLBT_COMPARE
-#error "TLBT_COMPARE must be defined"
+#if !defined(TLBT_COMPARE) && !defined(TLBT_COMPARE_REF)
+#error "TLBT_COMPARE or TLBT_COMPARE_REF must be defined"
 #endif
 
 #ifndef TLBT_T_NAME
@@ -274,14 +274,22 @@ TLBT_INLINE bool TLBT_HEAP_FUNC(pop)(TLBT_HEAP_TYPE *const h) {
   return true;
 }
 
+static inline int TLBT_HEAP_FUNC_INTERNAL(compare)(TLBT_HEAP_TYPE *const h, TLBT_SIZE_T i, TLBT_SIZE_T j) {
+#if defined(TLBT_COMPARE_REF)
+  return TLBT_COMPARE_REF(&h->data[i], &h->data[j]);
+#else
+  return TLBT_COMPARE(h->data[i], h->data[j]);
+#endif
+}
+
 TLBT_INLINE void TLBT_HEAP_FUNC_INTERNAL(bubble_up)(TLBT_HEAP_TYPE *const h, TLBT_SIZE_T i) {
   while (i > 0) {
     TLBT_SIZE_T parent = TLBT_HEAP_PARENT(i);
 
 #ifdef TLBT_MAX_HEAP
-    if (TLBT_COMPARE(h->data[parent], h->data[i]) >= 0) {
+    if (TLBT_HEAP_FUNC_INTERNAL(compare)(h, parent, i) >= 0) {
 #else
-    if (TLBT_COMPARE(h->data[parent], h->data[i]) <= 0) {
+    if (TLBT_HEAP_FUNC_INTERNAL(compare)(h, parent, i) <= 0) {
 #endif
       break;
     }
@@ -298,17 +306,17 @@ TLBT_INLINE void TLBT_HEAP_FUNC_INTERNAL(bubble_down)(TLBT_HEAP_TYPE *const h, T
     TLBT_SIZE_T best = i;
 
 #ifdef TLBT_MAX_HEAP
-    if (left < h->count && TLBT_COMPARE(h->data[left], h->data[best]) > 0) {
+    if (left < h->count && TLBT_HEAP_FUNC_INTERNAL(compare)(h, left, best) > 0) {
       best = left;
     }
-    if (right < h->count && TLBT_COMPARE(h->data[right], h->data[best]) > 0) {
+    if (right < h->count && TLBT_HEAP_FUNC_INTERNAL(compare)(h, right, best) > 0) {
       best = right;
     }
 #else
-    if (left < h->count && TLBT_COMPARE(h->data[left], h->data[best]) < 0) {
+    if (left < h->count && TLBT_HEAP_FUNC_INTERNAL(compare)(h, left, best) < 0) {
       best = left;
     }
-    if (right < h->count && TLBT_COMPARE(h->data[right], h->data[best]) < 0) {
+    if (right < h->count && TLBT_HEAP_FUNC_INTERNAL(compare)(h, right, best) < 0) {
       best = right;
     }
 #endif
@@ -328,6 +336,7 @@ TLBT_INLINE void TLBT_HEAP_FUNC_INTERNAL(bubble_down)(TLBT_HEAP_TYPE *const h, T
 #undef TLBT_COMBINE
 #undef TLBT_COMBINE2
 #undef TLBT_COMPARE
+#undef TLBT_COMPARE_REF
 #undef TLBT_DEFINITION
 #undef TLBT_DYNAMIC_MEMORY
 #undef TLBT_FREE
