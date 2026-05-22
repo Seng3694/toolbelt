@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdlib.h>
 #include "common.h"
 #include "../src/assert.h"
 
@@ -12,10 +13,18 @@ static bool internal_assert_triggered = false;
     }                                                                                                                  \
   } while (0)
 
+// this is for qsort for comparing sorted results
+// if you wanted to use a comparison function with references for in the deque, then define TLBT_COMPARE_REF
+// in fact `#define TLBT_COMPARE_REF int_compare` would work here
+static inline int int_compare(const int *const a, const int *const b) {
+  return (*a) - (*b);
+}
+
 #define TLBT_T int
 #define TLBT_STATIC
 #define TLBT_BASE2_CAPACITY
 #define TLBT_ASSERT INTERNAL_ASSERT
+#define TLBT_COMPARE(a, b) ((a) - (b))
 #include "../src/deque.h"
 
 int main(void) {
@@ -39,7 +48,7 @@ int main(void) {
   tlbt_assert_msg(tlbt_deque_int_peek_front(&d) == NULL, "peek return value should be NULL with an empty deque");
 
   /* shuf -i 10-99 -n 16 | paste -sd ',' */
-  int values[16] = {91, 19, 56, 37, 86, 95, 82, 12, 42, 11, 94, 89, 39, 14, 53, 48};
+  const int values[16] = {91, 19, 56, 37, 86, 95, 82, 12, 42, 11, 94, 89, 39, 14, 53, 48};
 
   for (int i = 0; i < 16; ++i) {
     bool success = tlbt_deque_int_push_back(&d, values[i]);
@@ -122,6 +131,28 @@ int main(void) {
     tlbt_deque_int_init(&copy, 8, copy_buffer);
     bool success = tlbt_deque_int_copy(&copy, &d);
     tlbt_assert_msg(!success, "should not have successfully copied");
+  }
+
+  // sorting
+  {
+    int sorted[16] = {0};
+    memcpy(sorted, values, sizeof(sorted));
+    qsort(sorted, sizeof(sorted) / sizeof(sorted[0]), sizeof(sorted[0]),
+          (int (*)(const void *const, const void *const))int_compare);
+
+    tlbt_deque_int_clear(&d);
+    for (int i = 0; i < 16; ++i) {
+      (void)tlbt_deque_int_push_back(&d, values[i]);
+    }
+    tlbt_deque_int_sort(&d);
+    tlbt_deque_iterator_int iter = {0};
+    tlbt_deque_iterator_int_init(&iter, &d);
+    int index = 0;
+    int value = 0;
+    while (tlbt_deque_iterator_int_iterate(&iter, &value)) {
+      tlbt_assert_fmt(value == sorted[index], "sorted incorrectly. expected '%d', actual '%d'", sorted[index], value);
+      ++index;
+    }
   }
 
   TLBT_TEST_DONE();

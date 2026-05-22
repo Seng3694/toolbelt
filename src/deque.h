@@ -4,6 +4,10 @@ types:
 - tlbt_deque_iterator_TYPE    deque iterator type
 
 functions:
+ !! IMPORTANT !!
+  `peek` and `at` functions return a pointer to the element.
+  these pointers are invalidated whenever `push`, `pop` or `clear` is used!
+
 - tlbt_deque_TYPE_push_back            pushes an item to the back of the deque
 - tlbt_deque_TYPE_push_front           pushes an item to the front of the deque
 - tlbt_deque_TYPE_peek_back            peeks the item at the back of the deque
@@ -29,7 +33,9 @@ TLBT_IMPLEMENTATION  for the corresponding implementation of the definitions in 
 TLBT_STATIC          if you want to define and implement them statically in a source file
 
 === required definitions ===
-TLBT_T                 the deque type
+TLBT_T                             the deque type
+TLBT_COMPARE OR TLBT_COMPARE_REF   function for comparing two items of TYPE (either by value or reference)
+                                   not required when TLBT_NO_SORT is defined
 
 === optional definitions ===
 TLBT_T_NAME            default is TLBT_T
@@ -37,6 +43,7 @@ TLBT_ASSERT            default is assert from <assert.h>
 TLBT_MEMCPY            default is memcpy from <string.h>
 TLBT_BASE2_CAPACITY    will use bit operations instead of modulo
 TLBT_SIZE_T            default is size_t from <stddef.h>
+TLBT_NO_SORT           don't define a sort function. this makes the TLBT_COMPARE/_REF definitions unrequired
 TLBT_DEQUE_NO_ITERATOR don't define an iterator struct and functions
 
 === memory ===
@@ -95,8 +102,16 @@ TLBT_FREE    if TLBT_DYNAMIC_MEMORY is defined. default is free from <stdlib.h>
 #define TLBT_MEMCPY memcpy
 #endif
 
+#ifndef TLBT_NO_SORT
+#if !defined(TLBT_COMPARE) && !defined(TLBT_COMPARE_REF)
+#error "TLBT_COMPARE or TLBT_COMPARE_REF must be defined when TLBT_NO_SORT isn't defined"
+#endif
+
+#endif
+
 #define TLBT_DEQUE_TYPE TLBT_COMBINE2(tlbt_deque_, TLBT_T_NAME)
 #define TLBT_DEQUE_FUNC(name) TLBT_COMBINE2(TLBT_DEQUE_TYPE, TLBT_COMBINE2(_, name))
+#define TLBT_DEQUE_FUNC_INTERNAL(name) TLBT_COMBINE2(_, TLBT_COMBINE2(TLBT_DEQUE_TYPE, TLBT_COMBINE2(_, name)))
 
 #ifndef TLBT_DEQUE_NO_ITERATOR
 #define TLBT_DEQUE_ITERATOR_TYPE TLBT_COMBINE2(tlbt_deque_iterator_, TLBT_T_NAME)
@@ -152,6 +167,11 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(pop_back)(TLBT_DEQUE_TYPE *const d);
 TLBT_INLINE TLBT_T *TLBT_DEQUE_FUNC(peek_front)(TLBT_DEQUE_TYPE *const d);
 TLBT_INLINE TLBT_T *TLBT_DEQUE_FUNC(peek_back)(TLBT_DEQUE_TYPE *const d);
 TLBT_INLINE TLBT_T *TLBT_DEQUE_FUNC(at)(TLBT_DEQUE_TYPE *const d, const TLBT_SIZE_T index);
+
+#ifndef TLBT_NO_SORT
+TLBT_INLINE void TLBT_DEQUE_FUNC(sort)(TLBT_DEQUE_TYPE *const d);
+TLBT_INLINE void TLBT_DEQUE_FUNC_INTERNAL(quick_sort_loop)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T lo, TLBT_SIZE_T hi);
+#endif
 
 static inline void TLBT_DEQUE_FUNC(clear)(TLBT_DEQUE_TYPE *const d) {
   d->count = 0;
@@ -320,6 +340,81 @@ TLBT_INLINE TLBT_T *TLBT_DEQUE_FUNC(at)(TLBT_DEQUE_TYPE *const d, const TLBT_SIZ
   return d->count == 0 ? NULL : &d->data[TLBT_MOD(d->head + index, d->capacity)];
 }
 
+#ifndef TLBT_NO_SORT
+
+static inline void TLBT_DEQUE_FUNC_INTERNAL(swap)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T i, TLBT_SIZE_T j) {
+  if (i == j)
+    return;
+
+  TLBT_T *a = TLBT_DEQUE_FUNC(at)(d, i);
+  TLBT_T *b = TLBT_DEQUE_FUNC(at)(d, j);
+  TLBT_T tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+static inline int TLBT_DEQUE_FUNC_INTERNAL(compare)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T i, TLBT_SIZE_T j) {
+#if defined(TLBT_COMPARE_REF)
+  return TLBT_COMPARE_REF(TLBT_DEQUE_FUNC(at)(d, i), TLBT_DEQUE_FUNC(at)(d, j));
+#else
+  return TLBT_COMPARE(*TLBT_DEQUE_FUNC(at)(d, i), *TLBT_DEQUE_FUNC(at)(d, j));
+#endif
+}
+
+TLBT_INLINE void TLBT_DEQUE_FUNC_INTERNAL(quick_sort_loop)(TLBT_DEQUE_TYPE *const d, TLBT_SIZE_T lo, TLBT_SIZE_T hi) {
+  while (lo < hi) {
+    TLBT_SIZE_T mid = lo + (hi - lo) / 2;
+    int a = TLBT_DEQUE_FUNC_INTERNAL(compare)(d, lo, mid);
+    int b = TLBT_DEQUE_FUNC_INTERNAL(compare)(d, mid, hi);
+    int c = TLBT_DEQUE_FUNC_INTERNAL(compare)(d, lo, hi);
+
+    TLBT_SIZE_T pivot_idx;
+    if ((a <= 0 && b <= 0) || (a >= 0 && b >= 0))
+      pivot_idx = mid;
+    else if ((a <= 0 && c >= 0) || (a >= 0 && c <= 0))
+      pivot_idx = hi;
+    else
+      pivot_idx = lo;
+
+    // move pivot to end
+    TLBT_DEQUE_FUNC_INTERNAL(swap)(d, pivot_idx, hi);
+    TLBT_SIZE_T pivot_val = hi;
+
+    TLBT_SIZE_T store = lo;
+    for (TLBT_SIZE_T i = lo; i < hi; ++i) {
+      if (TLBT_DEQUE_FUNC_INTERNAL(compare)(d, i, pivot_val) < 0) {
+        TLBT_DEQUE_FUNC_INTERNAL(swap)(d, i, store);
+        ++store;
+      }
+    }
+    TLBT_DEQUE_FUNC_INTERNAL(swap)(d, store, hi);
+    TLBT_SIZE_T p = store;
+
+    // recurse on smaller partition, loop on larger
+    TLBT_SIZE_T left_len = p - lo;
+    TLBT_SIZE_T right_len = hi - p;
+
+    if (left_len < right_len) {
+      if (left_len > 1) {
+        TLBT_DEQUE_FUNC_INTERNAL(quick_sort_loop)(d, lo, p - 1);
+      }
+      lo = p + 1;
+    } else {
+      if (right_len > 1) {
+        TLBT_DEQUE_FUNC_INTERNAL(quick_sort_loop)(d, p + 1, hi);
+      }
+      hi = p - 1;
+    }
+  }
+}
+
+TLBT_INLINE void TLBT_DEQUE_FUNC(sort)(TLBT_DEQUE_TYPE *const d) {
+  if (d->count <= 1)
+    return;
+  TLBT_DEQUE_FUNC_INTERNAL(quick_sort_loop)(d, 0, d->count - 1);
+}
+#endif
+
 #ifdef TLBT_DYNAMIC_MEMORY
 TLBT_INLINE void TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_DEQUE_TYPE *const src) {
   TLBT_DEQUE_FUNC(ensure_capacity)(dest, src->count);
@@ -360,9 +455,12 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
 #undef TLBT_BASE2_CAPACITY
 #undef TLBT_COMBINE
 #undef TLBT_COMBINE2
+#undef TLBT_COMPARE
+#undef TLBT_COMPARE_REF
 #undef TLBT_DEFINITION
 #undef TLBT_DEQUE_DEC_WRAP
 #undef TLBT_DEQUE_FUNC
+#undef TLBT_DEQUE_FUNC_INTERNAL
 #undef TLBT_DEQUE_INC_WRAP
 #undef TLBT_DEQUE_ITERATOR_FUNC
 #undef TLBT_DEQUE_ITERATOR_TYPE
@@ -375,6 +473,7 @@ TLBT_INLINE bool TLBT_DEQUE_FUNC(copy)(TLBT_DEQUE_TYPE *const dest, const TLBT_D
 #undef TLBT_MALLOC
 #undef TLBT_MEMCPY
 #undef TLBT_MOD
+#undef TLBT_NO_SORT
 #undef TLBT_SIZE_T
 #undef TLBT_STATIC
 #undef TLBT_T

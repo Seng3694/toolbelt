@@ -25,6 +25,10 @@ static void custom_free(void *ptr) {
   free(ptr);
 }
 
+static inline int int_compare(const int *const a, const int *const b) {
+  return (*a) - (*b);
+}
+
 #define TLBT_T int
 #define TLBT_STATIC
 #define TLBT_BASE2_CAPACITY
@@ -32,6 +36,7 @@ static void custom_free(void *ptr) {
 #define TLBT_MALLOC custom_alloc
 #define TLBT_FREE custom_free
 #define TLBT_ASSERT INTERNAL_ASSERT
+#define TLBT_COMPARE(a, b) ((a) - (b))
 #include "../src/deque.h"
 
 int main(void) {
@@ -132,6 +137,28 @@ int main(void) {
       tlbt_assert_msg(*tlbt_deque_int_at(&d, i) == *tlbt_deque_int_at(&copy, i), "copied elements should be the same");
     }
     tlbt_deque_int_destroy(&copy);
+  }
+
+  // sorting
+  {
+    int sorted[16] = {0};
+    memcpy(sorted, values, sizeof(sorted));
+    qsort(sorted, sizeof(sorted) / sizeof(sorted[0]), sizeof(sorted[0]),
+          (int (*)(const void *const, const void *const))int_compare);
+
+    tlbt_deque_int_clear(&d);
+    for (int i = 0; i < 16; ++i) {
+      (void)tlbt_deque_int_push_back(&d, values[i]);
+    }
+    tlbt_deque_int_sort(&d);
+    tlbt_deque_iterator_int iter = {0};
+    tlbt_deque_iterator_int_init(&iter, &d);
+    int index = 0;
+    int value = 0;
+    while (tlbt_deque_iterator_int_iterate(&iter, &value)) {
+      tlbt_assert_fmt(value == sorted[index], "sorted incorrectly. expected '%d', actual '%d'", sorted[index], value);
+      ++index;
+    }
   }
 
   tlbt_deque_int_destroy(&d);
