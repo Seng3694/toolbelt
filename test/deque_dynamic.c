@@ -148,7 +148,10 @@ int main(void) {
 
     tlbt_deque_int_clear(&d);
     for (int i = 0; i < 16; ++i) {
-      (void)tlbt_deque_int_push_back(&d, values[i]);
+      if (i % 2 == 0)
+        (void)tlbt_deque_int_push_back(&d, values[i]);
+      else
+        (void)tlbt_deque_int_push_front(&d, values[i]);
     }
     tlbt_deque_int_sort(&d);
     tlbt_deque_iterator_int iter = {0};
