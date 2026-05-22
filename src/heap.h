@@ -149,7 +149,7 @@ static inline bool TLBT_HEAP_FUNC(peek)(TLBT_HEAP_TYPE *const h, TLBT_T *const o
 }
 
 static inline void TLBT_HEAP_FUNC_INTERNAL(swap)(TLBT_T *const a, TLBT_T *const b) {
-  const TLBT_T tmp = *a;
+  TLBT_T tmp = *a;
   *a = *b;
   *b = tmp;
 }

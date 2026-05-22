@@ -2,7 +2,8 @@
 
 #ifndef NDEBUG
 
-#include <stdio.h>
+#include <stdio.h>  /* fprintf stderr */
+#include <stdlib.h> /* abort */
 
 #define tlbt_assert(cond)                                                                                              \
   do {                                                                                                                 \

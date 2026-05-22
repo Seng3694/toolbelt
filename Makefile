@@ -1,5 +1,5 @@
 CC:=gcc
-CFLAGS:=-g -O0 -Wall -std=c99 -fsanitize=undefined -fsanitize=address -MMD -MP
+CFLAGS:=-g -O0 -Wall -Wextra -Werror -Wimplicit-function-declaration -std=c99 -fsanitize=undefined -fsanitize=address -MMD -MP
 
 TEST_SOURCES:=$(wildcard test/*.c)
 TEST_BINS:=$(patsubst test/%.c, build/%, $(TEST_SOURCES))

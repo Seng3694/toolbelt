@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "common.h"
 #include "../src/assert.h"
 
@@ -81,7 +82,7 @@ int main(void) {
     const string_slice *key = NULL;
     tlbt_set_iterator_str iter = {0};
     tlbt_set_iterator_str_init(&iter, &m);
-    int iterations = 0;
+    size_t iterations = 0;
     while (tlbt_set_iterator_str_iterate_ref(&iter, &key)) {
       bool found = false;
       // try finding the key in the source data
@@ -102,7 +103,7 @@ int main(void) {
     string_slice key = {0};
     tlbt_set_iterator_str iter = {0};
     tlbt_set_iterator_str_init(&iter, &m);
-    int iterations = 0;
+    size_t iterations = 0;
     while (tlbt_set_iterator_str_iterate(&iter, &key)) {
       bool found = false;
       // try finding the key in the source data

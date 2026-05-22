@@ -37,6 +37,7 @@ TLBT_VALUE_T           the hashmap value type. when omitted it will be a hashset
 TLBT_KEY_T_NAME        default is TLBT_KEY_T
 TLBT_VALUE_T_NAME      default is TLBT_VALUE_T
 TLBT_ASSERT            default is assert from <assert.h>
+TLBT_MEMSET            default is memset from <string.h>
 TLBT_BASE2_CAPACITY    will use bit operations instead of modulo
 TLBT_MAX_LOAD_FACTOR   float ]0,1[, lower means less time spent on collision resolution but more space wasted
                        resolution but more space wasted. default 0.7
@@ -114,6 +115,11 @@ _Static_assert(sizeof(TLBT_UINT32_T) == 4, "TLBT_UINT32_T has to have 4 bytes");
 #ifndef TLBT_SIZE_T
 #include <stddef.h>
 #define TLBT_SIZE_T size_t
+#endif
+
+#ifndef TLBT_MEMSET
+#include <string.h>
+#define TLBT_MEMSET memset
 #endif
 
 #ifdef TLBT_VALUE_T
@@ -341,7 +347,7 @@ TLBT_INLINE void TLBT_MAP_FUNC(create)(TLBT_MAP_TYPE *const m, TLBT_SIZE_T capac
   TLBT_ASSERT((capacity != 0 && (capacity & (capacity - 1)) == 0));
 #endif
   m->keys = TLBT_MALLOC(sizeof(TLBT_MAP_KEY_TYPE) * capacity);
-  memset(m->keys, 0, sizeof(TLBT_MAP_KEY_TYPE) * capacity);
+  TLBT_MEMSET(m->keys, 0, sizeof(TLBT_MAP_KEY_TYPE) * capacity);
 #ifdef TLBT_VALUE_T
   m->values = TLBT_MALLOC(sizeof(TLBT_VALUE_T) * capacity);
 #endif
@@ -404,7 +410,7 @@ TLBT_INLINE void TLBT_MAP_FUNC(init)(TLBT_MAP_TYPE *const m, TLBT_SIZE_T capacit
 TLBT_INLINE void TLBT_MAP_FUNC(init)(TLBT_MAP_TYPE *const m, TLBT_SIZE_T capacity, TLBT_MAP_KEY_TYPE *key_buffer) {
 #endif
   m->keys = key_buffer;
-  memset(m->keys, 0, sizeof(TLBT_MAP_KEY_TYPE) * capacity);
+  TLBT_MEMSET(m->keys, 0, sizeof(TLBT_MAP_KEY_TYPE) * capacity);
   m->capacity = capacity;
 #ifdef TLBT_BASE2_CAPACITY
   TLBT_ASSERT((capacity != 0 && (capacity & (capacity - 1)) == 0));
@@ -559,6 +565,7 @@ TLBT_INLINE bool TLBT_MAP_FUNC(copy)(TLBT_MAP_TYPE *const dest, const TLBT_MAP_T
 #undef TLBT_MAP_NO_ITERATOR
 #undef TLBT_MAP_TYPE
 #undef TLBT_MAX_LOAD_FACTOR
+#undef TLBT_MEMSET
 #undef TLBT_MOD
 #undef TLBT_OCCUPIED_BIT
 #undef TLBT_SIZE_T

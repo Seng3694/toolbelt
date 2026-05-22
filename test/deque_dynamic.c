@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "common.h"
 #include "../src/assert.h"
 
@@ -116,7 +117,7 @@ int main(void) {
     tlbt_deque_int_create(&copy, 64);
     tlbt_deque_int_copy(&copy, &d);
     tlbt_assert_msg(copy.count == d.count, "count should be the same");
-    for (int i = 0; i < copy.count; ++i) {
+    for (size_t i = 0; i < copy.count; ++i) {
       tlbt_assert_msg(*tlbt_deque_int_at(&d, i) == *tlbt_deque_int_at(&copy, i), "copied elements should be the same");
     }
     tlbt_deque_int_destroy(&copy);
@@ -127,7 +128,7 @@ int main(void) {
     tlbt_deque_int_create(&copy, 8);
     tlbt_deque_int_copy(&copy, &d);
     tlbt_assert_msg(copy.count == d.count, "count should be the same");
-    for (int i = 0; i < copy.count; ++i) {
+    for (size_t i = 0; i < copy.count; ++i) {
       tlbt_assert_msg(*tlbt_deque_int_at(&d, i) == *tlbt_deque_int_at(&copy, i), "copied elements should be the same");
     }
     tlbt_deque_int_destroy(&copy);

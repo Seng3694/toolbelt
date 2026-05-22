@@ -1,5 +1,6 @@
 #include "common.h"
 #include "../src/assert.h"
+#include <stddef.h>
 
 static bool internal_assert_triggered = false;
 #define INTERNAL_ASSERT(cond)                                                                                          \
@@ -120,7 +121,7 @@ int main(void) {
     point *value = NULL;
     tlbt_map_iterator_str_point iter = {0};
     tlbt_map_iterator_str_point_init(&iter, &m);
-    int iterations = 0;
+    size_t iterations = 0;
     while (tlbt_map_iterator_str_point_iterate_ref(&iter, &key, &value)) {
       bool correct_pair = false;
       // try finding the pair in the source data
@@ -143,7 +144,7 @@ int main(void) {
     point value = {0};
     tlbt_map_iterator_str_point iter = {0};
     tlbt_map_iterator_str_point_init(&iter, &m);
-    int iterations = 0;
+    size_t iterations = 0;
     while (tlbt_map_iterator_str_point_iterate(&iter, &key, &value)) {
       bool correct_pair = false;
       // try finding the pair in the source data
