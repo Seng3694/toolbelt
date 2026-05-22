@@ -17,6 +17,8 @@ functions:
 - tlbt_deque_TYPE_at                   returns a pointer to the item at the given index (or NULL)
 - tlbt_deque_TYPE_copy                 copies the src deque to the dest deque
 - tlbt_deque_TYPE_clear                resets the deque
+if TLBT_NO_SORT is not defined
+- tlbt_deque_TYPE_sort                 unstable quicksort
 - tlbt_deque_iterator_TYPE_init        initializes the iterator
 - tlbt_deque_iterator_TYPE_reset       resets the iterator
 - tlbt_deque_iterator_TYPE_iterate     iterates the deque and returns a copy
