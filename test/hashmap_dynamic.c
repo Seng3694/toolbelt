@@ -27,8 +27,8 @@ static void custom_free(void *ptr) {
 
 #define TLBT_KEY_T string_slice
 #define TLBT_VALUE_T point
-#define TLBT_HASH_FUNC(x) string_slice_hash(&x)
-#define TLBT_EQUALS_FUNC(a, b) string_slice_equals(&a, &b)
+#define TLBT_HASH(x) string_slice_hash(&x)
+#define TLBT_EQUALS(a, b) string_slice_equals(&a, &b)
 #define TLBT_KEY_T_NAME str
 #define TLBT_VALUE_T_NAME point
 #define TLBT_MAX_LOAD_FACTOR 0.5 // makes no sense but easier for testing

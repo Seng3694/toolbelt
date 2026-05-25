@@ -28,9 +28,9 @@ TLBT_IMPLEMENTATION  for the corresponding implementation of the definitions in 
 TLBT_STATIC          if you want to define and implement them statically in a source file
 
 === required definitions ===
-TLBT_KEY_T        the hashmap key type
-TLBT_HASH_FUNC    the function for hashing the key
-TLBT_EQUALS_FUNC  the function for checking key equality
+TLBT_KEY_T                      the hashmap key type
+TLBT_HASH OR TLBT_HASH_REF      the function for hashing the key
+TLBT_EQUALS OR TLBT_EQUALS_REF  the function for checking key equality
 
 === optional definitions ===
 TLBT_VALUE_T           the hashmap value type. when omitted it will be a hashset
@@ -39,8 +39,8 @@ TLBT_VALUE_T_NAME      default is TLBT_VALUE_T
 TLBT_ASSERT            default is assert from <assert.h>
 TLBT_MEMSET            default is memset from <string.h>
 TLBT_BASE2_CAPACITY    will use bit operations instead of modulo
-TLBT_MAX_LOAD_FACTOR   float ]0,1[, lower means less time spent on collision resolution but more space wasted
-                       resolution but more space wasted. default 0.7
+TLBT_MAX_LOAD_FACTOR   float ]0,1[, lower means less time spent on collision resolution but more space wasted.
+                       default is 0.7
 TLBT_SIZE_T            default is size_t from <stddef.h>
 TLBT_UINT32_T          default is uint32_t from <stdint.h>
 TLBT_MAP_NO_ITERATOR   don't define an iterator struct and functions
@@ -294,12 +294,28 @@ static inline bool TLBT_MAP_ITERATOR_FUNC(iterate_ref)(TLBT_MAP_ITERATOR_TYPE *c
 
 #ifdef TLBT_IMPLEMENTATION
 
-#ifndef TLBT_HASH_FUNC
-#error "TLBT_HASH_FUNC must be defined"
+#if !defined(TLBT_HASH) && !defined(TLBT_HASH_REF)
+#error "TLBT_HASH or TLBT_HASH_REF must be defined"
 #endif
 
-#ifndef TLBT_EQUALS_FUNC
-#error "TLBT_EQUALS_FUNC must be defined"
+#undef TLBT_HASH_FUNC
+#ifdef TLBT_HASH
+#define TLBT_HASH_FUNC(x) TLBT_HASH((x))
+#endif
+#ifdef TLBT_HASH_REF
+#define TLBT_HASH_FUNC(x) TLBT_HASH_REF(&(x))
+#endif
+
+#if !defined(TLBT_EQUALS) && !defined(TLBT_EQUALS_REF)
+#error "TLBT_EQUALS or TLBT_EQUALS_REF must be defined"
+#endif
+
+#undef TLBT_EQUALS_FUNC
+#ifdef TLBT_EQUALS
+#define TLBT_EQUALS_FUNC(a, b) TLBT_EQUALS((a), (b))
+#endif
+#ifdef TLBT_EQUALS_REF
+#define TLBT_EQUALS_FUNC(a, b) TLBT_EQUALS_REF(&(a), &(b))
 #endif
 
 TLBT_INLINE bool TLBT_MAP_FUNC_INTERNAL(find_entry)(TLBT_MAP_KEY_TYPE *keys, TLBT_SIZE_T capacity, TLBT_KEY_T key,
@@ -543,12 +559,17 @@ TLBT_INLINE bool TLBT_MAP_FUNC(copy)(TLBT_MAP_TYPE *const dest, const TLBT_MAP_T
 #undef TLBT_BASE2_CAPACITY
 #undef TLBT_COMBINE
 #undef TLBT_COMBINE2
+#undef TLBT_COMPARE_REF
 #undef TLBT_DEFINITION
 #undef TLBT_DELETED_BIT
 #undef TLBT_DYNAMIC_MEMORY
+#undef TLBT_EQUALS
 #undef TLBT_EQUALS_FUNC
+#undef TLBT_EQUALS_REF
 #undef TLBT_FREE
+#undef TLBT_HASH
 #undef TLBT_HASH_FUNC
+#undef TLBT_HASH_REF
 #undef TLBT_IMPLEMENTATION
 #undef TLBT_INDEX_MASK
 #undef TLBT_INLINE

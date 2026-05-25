@@ -13,8 +13,8 @@ static bool internal_assert_triggered = false;
   } while (0)
 
 #define TLBT_KEY_T string_slice
-#define TLBT_HASH_FUNC(x) string_slice_hash(&x)
-#define TLBT_EQUALS_FUNC(a, b) string_slice_equals(&a, &b)
+#define TLBT_HASH(x) string_slice_hash(&x)
+#define TLBT_EQUALS(a, b) string_slice_equals(&a, &b)
 #define TLBT_KEY_T_NAME str
 #define TLBT_MAX_LOAD_FACTOR 0.5 // makes no sense but easier for testing
 #define TLBT_ASSERT INTERNAL_ASSERT
