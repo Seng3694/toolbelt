@@ -42,6 +42,8 @@ Defining and implementing the types and functions in a single source file:
 ```c
 // main.c
 #define TLBT_T int
+// if TLBT_NO_SORT is not defined you need to provide a comparison function
+#define TLBT_NO_SORT
 #define TLBT_STATIC
 #include "deque.h"
 
@@ -50,6 +52,7 @@ Defining and implementing the types and functions in a single source file:
 // necessary because "char*" can't be used in the name due to the asterisk
 // you can also wrap the pointer in a struct or typedef it
 #define TLBT_T_NAME str
+#define TLBT_NO_SORT
 #define TLBT_STATIC
 #include "deque.h"
 
@@ -70,6 +73,7 @@ header file:
 #pragma once
 
 #define TLBT_T int
+#define TLBT_NO_SORT
 #define TLBT_DEFINITION
 #include "deque.h"
 ```
@@ -80,6 +84,7 @@ source file:
 // my_deque.c
 #include "my_deque.h"
 #define TLBT_T int
+#define TLBT_NO_SORT
 #define TLBT_IMPLEMENTATION
 #include "deque.h"
 ```
